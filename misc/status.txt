@@ -1,4 +1,4 @@
 Chi Nguyen.
 
-1. I plan on using Kali on my own machine.
-2. I am still waiting for the Kali license key.
+1. I plan on using Kali on the Olin computer.
+2. I installed Kali on my own machine, but my keyboard input is not received when I run the virtual machine. Seems like a lot of work to reboot and reconfigure.
