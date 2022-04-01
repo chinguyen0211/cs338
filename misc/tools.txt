@@ -1,0 +1,28 @@
+Author: Chi Nguyen
+
+1. ip addr
+   ifconfig
+	Source: https://opensource.com/article/18/5/how-find-ip-address-linux
+2. ping [hostname]
+   nslookup [hostname]
+   host [hostname]
+   dig [hostname] +short
+	Source: https://linuxhint.com/resolve_hostname_ip_address_bash_script/
+3. nslookup [ip address]
+	Source: https://www.folkstalk.com/2012/09/how-to-get-hostname-from-ip-address.html
+4. scp [filename] [destination]
+	Source: https://linuxize.com/post/how-to-use-scp-command-to-securely-transfer-files/
+5. sudo netstat -tnlp | grep [port]
+   sudo ss -tunlp
+   sudo lsof -nP -iTCP -sTCP:LISTEN
+	Source: https://linuxize.com/post/check-listening-ports-linux/
+6. sudo netstat -ltnp | grep -w [port]
+	Source: https://vitux.com/find-out-which-port-number-a-process-is-listening-on-using-linux/
+7. wget [website]
+	Source: https://www.lifewire.com/uses-of-command-wget-2201085
+8. curl -s -D - -o /dev/null [link]
+   curl -I [link]
+	Source: https://stackoverflow.com/questions/3252851/how-to-display-request-headers-with-command-line-curl
+9. curl -L -v -s -o /dev/null [link]
+   curl -v [link] 
+	Source: https://stackoverflow.com/questions/3252851/how-to-display-request-headers-with-command-line-curl
