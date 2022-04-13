@@ -1,0 +1,108 @@
+Author name: Chi Nguyen
+
+[Diffie-Hellman]:
+1. The shared secret agreed upon by Alice and Bob is 36.
+
+2. Here is the code involved in the process of figuring out the secret:
+---------------------------------------
+g = 11
+p = 59
+
+failed_a = []
+failed_b = []
+
+def carmichael():
+    a = 0
+    b = 0
+    while (g**a % 59) != 57 and a not in failed_a :
+        a+=1
+
+    while (g**b % 59) != 44 and b not in failed_b:
+        b+=1
+
+    return (a,b)
+
+while (11**carmichael()[0]%59)**carmichael()[1]%59 != (11**carmichael()[1]%59)**carmichael()[0]%59 :
+    failed_a.append(carmichael[0])
+    failed_b.append(carmichael[1])
+    carmichael()
+
+sharedK = (11**carmichael()[0]%59)**carmichael()[1]%59
+print("The shared secret is: ", sharedK)
+---------------------------------------
+The python file containing this code is stored within this directory, titled dh.py.
+
+3. Since the process that I am using is brute force, it is almost impossible to fail.
+Of course, if the integers involved were much larger, we will have a much longer running time.
+Bigger integers mean larger space-time complexity, and the place where this will be of much relevance is line 10-21 where most of the modular arithmetic happens.
+(if you don't want to read the python code in the text environment, line 10-21 contains 3 while-loops).
+Furthermore, there is also a risk of a, b chosen not being the order of g in Z_p; however, since the code does account for that situation by establishing two lists failed_a and failed_b, we can probably make it work.
+
+====================
+
+[RSA]
+1. The encrypted message from Alice to Bob is:
+Hey Bob. It's even worse than we thought! Your pal, Alice. https://www.schneier.com/blog/archives/2022/04/airtags-are-used-for-stalking-far-more-than-previously-reported.html
+2. Method of computation:
+---------------------------------------
+import collections
+import operator
+
+cipherText = [1516, 3860, 2891, 570, 3483, 4022, 3437, 299,
+ 570, 843, 3433, 5450, 653, 570, 3860, 482,
+ 3860, 4851, 570, 2187, 4022, 3075, 653, 3860,
+ 570, 3433, 1511, 2442, 4851, 570, 2187, 3860,
+ 570, 3433, 1511, 4022, 3411, 5139, 1511, 3433,
+ 4180, 570, 4169, 4022, 3411, 3075, 570, 3000,
+ 2442, 2458, 4759, 570, 2863, 2458, 3455, 1106,
+ 3860, 299, 570, 1511, 3433, 3433, 3000, 653,
+ 3269, 4951, 4951, 2187, 2187, 2187, 299, 653,
+ 1106, 1511, 4851, 3860, 3455, 3860, 3075, 299,
+ 1106, 4022, 3194, 4951, 3437, 2458, 4022, 5139,
+ 4951, 2442, 3075, 1106, 1511, 3455, 482, 3860,
+ 653, 4951, 2875, 3668, 2875, 2875, 4951, 3668,
+ 4063, 4951, 2442, 3455, 3075, 3433, 2442, 5139,
+ 653, 5077, 2442, 3075, 3860, 5077, 3411, 653,
+ 3860, 1165, 5077, 2713, 4022, 3075, 5077, 653,
+ 3433, 2442, 2458, 3409, 3455, 4851, 5139, 5077,
+ 2713, 2442, 3075, 5077, 3194, 4022, 3075, 3860,
+ 5077, 3433, 1511, 2442, 4851, 5077, 3000, 3075,
+ 3860, 482, 3455, 4022, 3411, 653, 2458, 2891,
+ 5077, 3075, 3860, 3000, 4022, 3075, 3433, 3860,
+ 1165, 299, 1511, 3433, 3194, 2458]
+
+x = 0
+eBob = 13
+nBob = 5561
+
+# decrypt by frequency
+
+# sort list by ascii frequency
+wordFrequency = sorted((collections.Counter(cipherText)).items(), key=operator.itemgetter(1), reverse=True)
+mostFrequentCrypt = wordFrequency[0][0] # most frequent letter should be 'e'
+
+x = 0
+while (x**13 % 5561) != mostFrequentCrypt:
+    x+=1 # x is the most frequent ASCII
+
+# find Bob's private key
+nBob = 0
+while (mostFrequentCrypt**nBob % 5561) != x:
+    nBob += 1 # we now have Bob's private key
+
+decryptString = ""
+
+for num in cipherText:
+    num = num**nBob % 5561
+    decryptString += chr(num)
+
+print(decryptString)
+---------------------------------------
+The python file containing this code is stored within this directory, titled rsa.py.
+In this code, I used frequency analysis attack to figure out Bob's secret key.
+By counting the frequency of every encrypted value and sorting them in descending order, I find the encrypted letter that shows up the most (which should be 'e'. Then I used brute-force method to figure out the ASCII of the most frequently used character (optional: check it to be 'e') and brute force again to get Bob's secret key.
+The method of encoding in this text is obviously ASCII. 
+
+3. Once again, since the main method is brute force (besides frequency analysis), the only worry is the space-time complexity if the integers involved were much larger. Similar to Diffie-Hellman, there is a risk of the value of nBob not being the order of mostFrequentCrypt in Z_5561, which is our assumption in the while loop on line 43 (the last while loop).
+
+4. The message encoding Alice used would be insecure even if Bob's keys involved larger integers because Eve can do a frequency analysis like I just did, assuming the encrypted letter that appears the most is 'e', or 'a', 'o', 't', etc. Since Bob uses the same method of encryption for every single character / cipherblock, Eve only need to decrypt one character to be able to decrypt all the other characters.
