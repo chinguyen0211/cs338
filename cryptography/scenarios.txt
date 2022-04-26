@@ -1,0 +1,79 @@
+Author: Chi Nguyen
+
+==================================================
+
+1. Alice wants to send Bob a long message, and she doesn't want Eve to be able to read it. Assume for this scenario that PITM is impossible.
+
+* Plan:
+	- Alice and Bob use Diffie-Hellman to agree on a shared secret key K. Since PITM attack is impossible in this scenario, Diffie-Hellman secures both of them a shared secret, and Eve will not be able to extract K.
+	- Alice then uses the symmetric encryption algorithm AES and sends Bob AES(K,M) where M is the long message she wants to send. As the limitation of only being able to send short message is only applicable to ppublic key encryption, AES with CBC can safely encrypt her message. After receiving, Bob decrypts the message using AES_D(K,C).
+
+* Analysis:
+	- As stated, this plan works as AES using CBC can safely encrypt long message without fear of repetition, thus making it impossible for Eve to decrypt the message using something like frequency analysis.
+	- Since PITM attack is impossible, the Diffie-Hellman key exchange protocol produces a secured secret K that Eve cannot extract as she does not know a or b.
+
+==================================================
+
+2. Alice wants to send Bob a long message. She doesn't want Mal to be able to modify the message without Bob detecting the change.
+
+* Plan:
+	- Alice and Bob use Diffie-Hellman to agree on a shared secret key K. Mal might be able to insert himself in the middle of this process and extract the key K. To avoid this, we can employ Bob's certificate and Alice's challenge (if certificate is not allowed in this scenario, it is fine. Our main goal is so that Mal can't modify the message without Bob detecting the change, not preventing Mal from seeing the message).
+	- Alice then uses AES to encrypt her message using the key agreed upon. This gives her AES(K,M).
+	- Then, she hashes her message. After getting H(M), she concatenates this to the end of her ciphertext. This gives her AES(K,M) || H(M), which she sends to Bob. 
+	- Bob receives AES(K,M) || H(M). He splits this into X = AES(K,M) and Y = H(M). He then computes AES_D(K,X) which should give him M. He then needs to hash the M he just got and compares it to Y. If H(M) == Y, then the message is not changed. Else, he knows Mal has been tampering.
+
+* Analysis:
+	- Like in scenario 1, this plan works as AES using CBC can safely encrypt long message without fear of repetition, thus making it impossible for Mal to brute force using frequency analysis.
+	- Even if Mal can obtain the key K and modify the message M, H(M) will be changed drastically, and when Bob computes H(M), he can see that if there has been successful attempts from Mal to change the content of the message if H(M) he computes is different from H(M) in the message.
+	- Obviously in this case, Alice can also choose to encrypt AES(K,M) || H(M), H(M) itself, etc. However, if we assume that the PITM attack is successful, we should assume that extra security measurements to encrypt H(M) or any other variation of the ciphertext besides the core message itself will also be easily thwarted. Again, our main mission is to prevent Mal from making changes that Bob cannot detect. If Alice wants to be very sure, she can compute E(P_B, H(M)) and concatenate it to the end of AES(K,M) instead of H(M). This should give her AES(K,M) || E(P_B,M), which she can send to Bob, and he can decrypt this accordingly using the steps described above along with his own secret key S_B.
+
+==================================================
+
+3. Alice wants to send Bob a long message (in this case, it's a signed contract between AliceCom and BobCom), she doesn't want Eve to be able to read it, and she wants Bob to have confidencee that it was Alice who sent the message. Assume for this scenario that PITM is impossible.
+
+
+* Plan:
+	- Alice and Bob use Diffie-Hellman to agree on a shared secret key K. Eve does not know this key as it is impossible to calculate K without Alice's a and Bob's b.
+	- She can now use AES to encrypt this message by computing AES(K,M). She then can compute H(M), encrypt it using public key cryptography and her own secret key S_A to get E(S_A, H(M)). Concatenating this to the end of AES(K, M) gives AES(K,M) || E(S_A, H(M)), which she can send to Bob.
+	- Bob splits the ciphertext he receives into X = AES(K,M) and Y = E(S_A, H(M)). He can decrypt X via AES_D(K,X), which should gives him M back. To check that this is really Alice, he can now compute H(M) using the M that he just decrypted. He then can decrypt Y using Alice's public key through E(P_A,Y). This should give him back H(M). If this H(M) matches with the H(M) that he computed through X, he can have confidence that it is Alice.
+
+* Analysis:
+	- This plan works because once again, Eve cannot extract K, which makes it impossible for her to read the message.
+	- Bob can rest assure that it is Alice who sent him the message as she is the only person with the secret key S_A, and thus only she could have encrypted E(S_A, H(M)).
+
+==================================================
+
+4. Suppose Bob sues Alice for breach of contract and presents as evidence: the digitally signed contract ( C || Sig ) and Alice's public key P_A. Suppose Alice says in court "C is not the contract I sent to Bob".
+
+3 things Alice could claim happened are:
+	- The contract could have been corrupted while sending. It is possible for information to get corrupted during transmission, and this possibly will lead to C not being the contract Alice sent to Bob. Without error-correcting code, it is impossible for rectify this, so the judge might find this plausible (but who doesn't use error-correcting code these days?). Furthermore, a small error in C could lead to a big change in Sig, as Sig is encrypted H(C) using Alice's secret key.
+	- Alice lost her private key. This is entirely possible, especially if she claimed negligent in guarding her secret.
+	- Alice could also claim that the public key provided to Bob was false. It is entirely possible for a third party to alter the public key.
+	- Besides, who says Bob isn't the perjurer in this case?
+
+==================================================
+
+5. Show the formula CA would use to compute Sig_CA.
+
+	- Sig_CA = E(S_CA, H(data))
+		+ S_CA is kept by Certificate Authority
+		+ H(data) is computed through hashing "bob.com" || P_B
+			* "bob.com" and P_B are provided by Bob, verified by CA
+
+==================================================
+
+6. Bob now has the certificate Cert_B from the previous question. During a communication, Bob sends Alice Cert_B. Is that enough for Alice to believe she's talking to Bob?
+
+	- No, it definitely is not. It could be Mal pretending to be Bob because Cert_B is publicly available.
+
+What could Alice and Bob do to convince Alice that Bob has the S_B that goes with the P_B in Cert_B?
+	
+	- Alice can issue a challenge to Bob, for example sending Bob a randomly generated number R. Bob can then encrypt it using his private key S_B, send it back to Alice, who then can decrypt it using Bob's public key that comes with Cert_B.
+
+==================================================
+
+7. Finally, list at least two ways this certificate-based trust system could be subverted, allowing Mal to convince Alice that Mal is Bob.
+
+	- Since Bob's Cert_B is publicly available, Mal could send Cert_B to Alice himself. Assuming Alice is naive enough to believe that Mal is Bob.
+	- Mal could insert himself in-between the communication, pass along Cert_B from Bob to Alice, and let Bob handle Alice's challenge. Then, when the Diffie-Hellman key exchange protocol starts, Mal could do his PITM attack.
+	- Of course, if Mal was sufficiently skilled, he could also break into CA's headquarters and steal S_CA, which then allows him to change Bob's certificate. He could also, with this skill, steal Bob's secret key.
