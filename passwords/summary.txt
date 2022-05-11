@@ -1,0 +1,26 @@
+Author: Chi Nguyen
+
+Part 1:
+Total time: 0m0.370s
+Number of hashes computed: 267751
+Number of passwords cracked: 2793
+Time per hash computed: 0.00000119514s
+Time per password cracked: 0.00013247404s
+Passwords cracked per number of hashes computed: 0.01
+(On average, one needs to compute 96 hashes to crack 1 password)
+
+Part 2:
+Total time: 81m14.575s
+Number of hashes computed:
+Number of passwords cracked: 199
+Time per password cracked: 24.4953517588s
+
+Part 3: 
+
+Analysis:
+- Time per passwords cracked did change between phases,
+by 20495801.1269. This time increased because we are now taking combination of words in phase 2, meaning that we have to consider 2^267751 combinations. The nested loop also make running time a lot, lot slower.
+- Reasons we should store password hashes and not passwords themselves:
+    + So that everyone who might have access to the storage can't read the passwords in plaintext.
+    + If we store the hash instead of the password itself, when someone tries to crack the password, it will be a lot harder for them to crack them fast.
+    + We store the hash also so that when someone triggers the FORGET PASSWORD, the password will not be sent in plaintext and thus, make it inaccessible for the attacker.
