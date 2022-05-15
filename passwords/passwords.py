@@ -1,29 +1,29 @@
 import hashlib
 
 
-## ============  PART 1  ============
-# pwDict1 = {}
+# ============  PART 1  ============
+pwDict1 = {}
 
-# words1 = [line.strip().lower() for line in open('words.txt')]
-# for line in open('passwords1.txt'):
-#     pw = line.split(':')
-#     pwDict1[pw[1]] = pw[0]
+words1 = [line.strip().lower() for line in open('words.txt')]
+for line in open('passwords1.txt'):
+    pw = line.split(':')
+    pwDict1[pw[1]] = pw[0]
 
-# f = open('cracked1.txt', 'a')
-# computedH1 = 0
-# crackedPw1 = 0
-# for word in words1:
-#     hPw = hashlib.sha256(word.encode('ascii')).hexdigest()
-#     computedH1 += 1
-#     if pwDict1.get(hPw) is not None:
-#         f.write(pwDict1.get(hPw) + ":" + word + "\n")
-#         crackedPw1 += 1
-# f.close()
+f = open('cracked1.txt', 'a')
+computedH1 = 0
+crackedPw1 = 0
+for word in words1:
+    hPw = hashlib.sha256(word.encode('ascii')).hexdigest()
+    computedH1 += 1
+    if pwDict1.get(hPw) is not None:
+        f.write(pwDict1.get(hPw) + ":" + word + "\n")
+        crackedPw1 += 1
+f.close()
 
-# print("# hashes computed = ", computedH1)
-# print("# of passwords cracked = ", crackedPw1)
+print("# hashes computed = ", computedH1)
+print("# of passwords cracked = ", crackedPw1)
 
-## ============  PART 2  ============
+# ============  PART 2  ============
 
 pwDict2 = {}
 
